@@ -15,16 +15,30 @@ const SavedBooks = () => {
   const [removeBook] = useMutation(REMOVE_BOOK);
   var userData = data?.me || {};
 
-  async function handleDeleteBook(bookId) {
+  const handleDeleteBook = async (bookId) => {
     try {
       await removeBook({
-        variables: { bookId: bookId },
+        variables: { bookId },
+        update: (cache, { data }) => {
+          const deletedBookId = data.removeBook.bookId;
+          cache.modify({
+            fields: {
+              me(existingDataRef = {}) {
+                const newDataRef = { ...existingDataRef };
+                newDataRef.savedBooks = newDataRef.savedBooks.filter(
+                  (bookRef) => bookRef.__ref !== `Book:${deletedBookId}`
+                );
+                return newDataRef;
+              },
+            },
+          });
+        },
       });
       removeBookId(bookId);
     } catch (err) {
       console.error(err);
     }
-  }
+  };
 
   if (loading) {
     return <h2>LOADING...</h2>;
