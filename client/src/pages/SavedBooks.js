@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   Jumbotron,
   Container,
@@ -7,38 +6,26 @@ import {
   Button,
 } from "react-bootstrap";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_ME } from "../utils/queries";
+import { QUERY_ME } from "../utils/queries";
 import { REMOVE_BOOK } from "../utils/mutations";
-import Auth from "../utils/auth";
 import { removeBookId } from "../utils/localStorage";
 
 const SavedBooks = () => {
-  const { loading, data } = useQuery(GET_ME);
-  const [removeBook, { error }] = useMutation(REMOVE_BOOK);
+  const { loading, data } = useQuery(QUERY_ME);
+  const [removeBook] = useMutation(REMOVE_BOOK);
+  var userData = data?.me || {};
 
-  const userData = data?.me || {};
-
-  const handleDeleteBook = async (bookId) => {
-    // get token
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-    if (!token) {
-      return false;
-    }
-
+  async function handleDeleteBook(bookId) {
     try {
       await removeBook({
-        variables: { bookId },
+        variables: { bookId: bookId },
       });
-
-      // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
       console.error(err);
     }
-  };
+  }
 
-  // if data isn't here yet, say so
   if (loading) {
     return <h2>LOADING...</h2>;
   }
@@ -47,27 +34,29 @@ const SavedBooks = () => {
     <>
       <Jumbotron fluid className="text-light bg-dark">
         <Container>
-          <h1>Viewing {userData.username}'s books!</h1>
+          <h1>Viewing saved books!</h1>
         </Container>
       </Jumbotron>
       <Container>
         <h2>
-          {userData.savedBooks?.length
+          {userData.savedBooks.length
             ? `Viewing ${userData.savedBooks.length} saved ${
                 userData.savedBooks.length === 1 ? "book" : "books"
               }:`
             : "You have no saved books!"}
         </h2>
         <CardColumns>
-          {userData.savedBooks?.map((book) => {
+          {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border="dark">
                 {book.image ? (
-                  <Card.Img
-                    src={book.image}
-                    alt={`The cover for ${book.title}`}
-                    variant="top"
-                  />
+                  <Card.Link href={book.link} target="_blank" rel="noreferrer">
+                    <Card.Img
+                      src={book.image}
+                      alt={`The cover for ${book.title}`}
+                      variant="top"
+                    />
+                  </Card.Link>
                 ) : null}
                 <Card.Body>
                   <Card.Title>{book.title}</Card.Title>
@@ -79,9 +68,6 @@ const SavedBooks = () => {
                   >
                     Delete this Book!
                   </Button>
-                  {error && (
-                    <span className="ml-2">Something went wrong...</span>
-                  )}
                 </Card.Body>
               </Card>
             );

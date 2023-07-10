@@ -11,7 +11,7 @@ import {
 import { useMutation } from "@apollo/client";
 import { SAVE_BOOK } from "../utils/mutations";
 import Auth from "../utils/auth";
-import { saveBook, searchGoogleBooks } from "../utils/API";
+import { searchGoogleBooks } from "../utils/API";
 import { saveBookIds, getSavedBookIds } from "../utils/localStorage";
 
 const SearchBooks = () => {
@@ -22,7 +22,7 @@ const SearchBooks = () => {
 
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
-  const [saveBook, { error }] = useMutation(SAVE_BOOK);
+  const [saveBook] = useMutation(SAVE_BOOK);
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
   useEffect(() => {
@@ -75,9 +75,8 @@ const SearchBooks = () => {
 
     try {
       await saveBook({
-        variables: { bookData: { ...bookToSave } },
+        variables: bookToSave,
       });
-      console.log(savedBookIds);
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {
       console.error(err);
@@ -122,11 +121,13 @@ const SearchBooks = () => {
             return (
               <Card key={book.bookId} border="dark">
                 {book.image ? (
-                  <Card.Img
-                    src={book.image}
-                    alt={`The cover for ${book.title}`}
-                    variant="top"
-                  />
+                  <Card.Link href={book.link} target="_blank" rel="noreferrer">
+                    <Card.Img
+                      src={book.image}
+                      alt={`The cover for ${book.title}`}
+                      variant="top"
+                    />
+                  </Card.Link>
                 ) : null}
                 <Card.Body>
                   <Card.Title>{book.title}</Card.Title>
@@ -135,18 +136,17 @@ const SearchBooks = () => {
                   {Auth.loggedIn() && (
                     <Button
                       disabled={savedBookIds?.some(
-                        (savedId) => savedId === book.bookId
+                        (savedBookId) => savedBookId === book.bookId
                       )}
                       className="btn-block btn-info"
                       onClick={() => handleSaveBook(book.bookId)}
                     >
-                      {savedBookIds?.some((savedId) => savedId === book.bookId)
-                        ? "Book Already Saved!"
-                        : "Save This Book!"}
+                      {savedBookIds?.some(
+                        (savedBookId) => savedBookId === book.bookId
+                      )
+                        ? "This book has already been saved!"
+                        : "Save this Book!"}
                     </Button>
-                  )}
-                  {error && (
-                    <span className="ml-2">Something went wrong...</span>
                   )}
                 </Card.Body>
               </Card>
