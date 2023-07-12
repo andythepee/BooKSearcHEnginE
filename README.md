@@ -1,9 +1,13 @@
 # BooKSearcHEnginE
+
+##Description
 This is a full stack application that is using a GraphQL API and is also deployed on heroku using Atlas to utilize a MongoDB database.
 For the following application a user can type a search term in a search box and the results appear,
 The user can sign up in order to keep track of saved books they are looking for, 
 The user can save books by clicking "Save This Book!" under each search result and 
 A user can view their saved books on a separate page.
+
+##Screenshots
 ![image](https://github.com/andythepee/BooKSearcHEnginE/assets/131628979/cbb429c2-c81b-4308-9ac9-419725fac044)
 
 
